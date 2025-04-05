@@ -1,0 +1,180 @@
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StrayGennie - Rescue, Adopt, Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="report.css" rel="stylesheet">
+    <style>
+        /* General Reset */
+       
+
+    </style>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header>
+        <h1>StrayGennie</h1>
+        <p>Rescue. Adopt. Report. Together, we can make a difference for stray animals.</p>
+    </header>
+
+    <!-- Navbar -->
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="report-animal.html">Report an Animal</a>
+        <a href="adopt.html">Adopt</a>
+        <a href="donate.html">Donate</a>
+        <a href="aboutus.html">About US</a>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <img class="image" src="https://img.freepik.com/premium-photo/cat-dog-sitting-together_191971-16716.jpg">
+      <section class="report-animal">
+        
+
+        <!-- Post Submission Form -->
+        <form class="report-form" id="reportForm">
+          <!-- Report Title -->
+          <label for="reportTitle">Report Title</label>
+          <input type="text" id="reportTitle" placeholder="Enter report title..." required>
+
+          <!-- Animal Description -->
+          <label for="reportContent">Animal Description</label>
+          <textarea id="reportContent" placeholder="Describe the animal and its condition..." rows="5" required></textarea>
+
+          <!-- Animal Condition -->
+          <label for="animalCondition">Animal Condition</label>
+          <select id="animalCondition" required>
+            <option value="" disabled selected>Select condition</option>
+            <option value="injured">Injured</option>
+            <option value="sick">Sick</option>
+            <option value="lost">Lost</option>
+            <option value="abandoned">Abandoned</option>
+          </select>
+
+          <!-- Animal Location -->
+          <label for="animalLocation">Animal Location</label>
+          <input type="text" id="animalLocation" placeholder="Enter location (e.g., city, street)..." required>
+
+          <!-- Upload Image -->
+          <label for="reportImage">Upload Image</label>
+          <input type="file" id="reportImage" accept="image/*" required />
+
+          <!-- Submit Button -->
+          <button type="button" onclick="submitReport()">Submit Report</button>
+        </form>
+
+        <!-- Loading Spinner Container -->
+        <div id="loading">
+          <p>Submitting your report...</p>
+          <div class="spinner"></div>
+        </div>
+
+      </section>
+    </main>
+  </div>
+  
+  <footer>
+    <p>&copy; 2024 StrayCare | All Rights Reserved</p>
+  </footer>
+
+  <!-- Separate scripts -->
+  <script>
+    // Add username modal dynamically (only if not already in the HTML)
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!document.getElementById("usernameModal")) {
+        const modalHTML = `
+          <div id="usernameModal" style="
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 9999;">
+            <div style="background: white; padding: 20px; border-radius: 10px; text-align: center;">
+              <h3>Enter Your Name</h3>
+              <input type="text" id="usernameInput" placeholder="Your name" style="padding: 8px; width: 80%;">
+              <br><br>
+              <button onclick="saveUsername()" style="padding: 8px 16px;">Save</button>
+            </div>
+          </div>`;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+      }
+  
+      // Hide spinner on load
+      document.getElementById("loading").style.display = "none";
+  
+      const savedUsername = localStorage.getItem("username");
+      if (savedUsername) {
+        document.getElementById("usernameModal").style.display = "none";
+      } else {
+        document.getElementById("usernameModal").style.display = "flex";
+      }
+    });
+  
+    // Save username
+    function saveUsername() {
+      const usernameInput = document.getElementById("usernameInput").value.trim();
+      if (usernameInput) {
+        localStorage.setItem("username", usernameInput);
+        document.getElementById("usernameModal").style.display = "none";
+      } else {
+        alert("Please enter a valid name.");
+      }
+    }
+  
+    // Submit report
+    function submitReport() {
+      const username = localStorage.getItem("username");
+      const reportTitle = document.getElementById("reportTitle").value.trim();
+      const reportContent = document.getElementById("reportContent").value.trim();
+      const animalCondition = document.getElementById("animalCondition").value;
+      const animalLocation = document.getElementById("animalLocation").value.trim();
+      const reportImage = document.getElementById("reportImage").files[0];
+      const reportTime = new Date().toLocaleString();
+  
+      if (!username || !reportTitle || !reportContent || !animalCondition || !animalLocation || !reportImage) {
+        alert("Please fill in all fields and attach an image.");
+        return;
+      }
+  
+      document.getElementById("loading").style.display = "block";
+  
+      const formData = new FormData();
+      formData.append("username", username);
+      formData.append("report_title", reportTitle);
+      formData.append("report_content", reportContent);
+      formData.append("animal_condition", animalCondition);
+      formData.append("report_location", animalLocation);
+      formData.append("imageContent", reportImage);
+      formData.append("report_time", reportTime);
+  
+      const scriptURL = 'https://script.google.com/macros/s/AKfycbxTMbsjAIXJDX_Uuqm-7sPw-8XQUgwWK1sZvwvzwZwjUaomvE-CyE67ScBSEof6Udtc/exec';
+  
+      fetch(scriptURL, {
+        method: 'POST',
+        body: formData
+      })
+        .then(response => response.text())
+        .then(data => {
+          alert("Report submitted successfully!");
+          document.getElementById("loading").style.display = "none";
+  
+          // Reset form
+          document.getElementById("reportForm").reset();
+        })
+        .catch(error => {
+          console.error("Error submitting report:", error);
+          alert("Error submitting report. Please try again.");
+          document.getElementById("loading").style.display = "none";
+        });
+    }
+  </script>
+  
+</body>
+</html>
